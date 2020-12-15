@@ -6,13 +6,16 @@ import torch
 # 5个反卷积层， deconv size*2 k= 2, s = 2, p = 0
 
 # 为了解决棋盘伪影---使用 sub-pixel convolution 代替反卷积
+# class torch.nn.PixleShuffle(upscale_factor)
+# 输入: (B,C x upscale_factor ^2 ,H,W)
+# 输出: (B,C,H x upscale_factor,W x upscale_factor)
 
 
 class HNet(nn.Module):
     def __init__(self, colordim=6):
         super(HNet, self).__init__()
-        filters = [50, 100, 200, 400]  # 特征的通道数
-
+        # filters = [50, 100, 200, 400]  # 特征的通道数
+        filters = [64, 128, 256, 512]  # 特征的通道数
         # 特征提取
         self.layer1 = nn.Sequential(
             nn.Conv2d(colordim, filters[0], kernel_size=2, stride=2, padding=0),  # size/2
@@ -34,29 +37,30 @@ class HNet(nn.Module):
             nn.LeakyReLU(inplace=True),  # inplace-选择是否进行覆盖运算
         )
         self.layer5 = nn.Sequential(
-            nn.Conv2d(filters[3], filters[3], kernel_size=2, stride=2, padding=0),  # size/2
+            nn.Conv2d(filters[3], 3072, kernel_size=2, stride=2, padding=0),  # size/2
+            # 通道数3072，为了上采样
             nn.ReLU(inplace=True),  # inplace-选择是否进行覆盖运算
         )
 
         # 上采样
         self.layer6 = nn.Sequential(
-            nn.ConvTranspose2d(filters[3], filters[3], kernel_size=2, stride=2, padding=0),
-            nn.BatchNorm2d(filters[3]),  # 400
+            nn.PixelShuffle(2),  # 输出的768通道，输入应该是3072 size*2
+            nn.BatchNorm2d(768),
         )
         self.layer7 = nn.Sequential(
-            nn.ConvTranspose2d(filters[3] * 2, filters[2], kernel_size=2, stride=2, padding=0),
-            nn.BatchNorm2d(filters[2]),  # 400
+            nn.PixelShuffle(2),  # 输出的192通道，输入应该是768  size*2
+            nn.BatchNorm2d(192),
         )
         self.layer8 = nn.Sequential(
-            nn.ConvTranspose2d(filters[2] * 2, filters[1], kernel_size=2, stride=2, padding=0),
-            nn.BatchNorm2d(filters[1]),  # 400
+            nn.PixelShuffle(2),  # 输出的48通道，输入应该是192  size*2
+            nn.BatchNorm2d(48),
         )
         self.layer9 = nn.Sequential(
-            nn.ConvTranspose2d(filters[1] * 2, filters[0], kernel_size=2, stride=2, padding=0),
-            nn.BatchNorm2d(filters[0]),  # 400
+            nn.PixelShuffle(2),  # 输出的12通道，输入应该是48  size*2
+            nn.BatchNorm2d(12),
         )
         self.layer10 = nn.Sequential(
-            nn.ConvTranspose2d(filters[0] * 2, 3, kernel_size=2, stride=2, padding=0),
+            nn.PixelShuffle(2),  # 输出的3通道，输入应该是12  size*2
             nn.Sigmoid()
         )
 
