@@ -15,7 +15,7 @@ class HNet(nn.Module):
     def __init__(self, colordim=6):
         super(HNet, self).__init__()
         # filters = [50, 100, 200, 400]  # 特征的通道数
-        filters = [64, 128, 256, 512]  # 特征的通道数
+        filters = [64, 128, 256, 512, 1024]  # 特征的通道数
         # 特征提取
         self.layer1 = nn.Sequential(
             nn.Conv2d(colordim, filters[0], kernel_size=2, stride=2, padding=0),  # size/2
@@ -37,31 +37,35 @@ class HNet(nn.Module):
             nn.LeakyReLU(inplace=True),  # inplace-选择是否进行覆盖运算
         )
         self.layer5 = nn.Sequential(
-            nn.Conv2d(filters[3], 3072, kernel_size=2, stride=2, padding=0),  # size/2
+            nn.Conv2d(filters[3], filters[4], kernel_size=2, stride=2, padding=0),  # size/2
             # 通道数3072，为了上采样
             nn.ReLU(inplace=True),  # inplace-选择是否进行覆盖运算
         )
 
         # 上采样
         self.layer6 = nn.Sequential(
-            nn.PixelShuffle(2),  # 输出的768通道，输入应该是3072 size*2
-            nn.BatchNorm2d(768),
+            nn.PixelShuffle(2),  # 输出的256通道，输入应该是1024 size*2=16
+            nn.BatchNorm2d(256),
         )
         self.layer7 = nn.Sequential(
-            nn.PixelShuffle(2),  # 输出的192通道，输入应该是768  size*2
+            nn.PixelShuffle(2),  # 输出的通道192，输入应该是256+512=768  size*2=32
             nn.BatchNorm2d(192),
         )
         self.layer8 = nn.Sequential(
-            nn.PixelShuffle(2),  # 输出的48通道，输入应该是192  size*2
-            nn.BatchNorm2d(48),
+            nn.PixelShuffle(2),  # 输出的112通道，输入应该是192+256=448  size*2=64
+            nn.BatchNorm2d(112),
         )
         self.layer9 = nn.Sequential(
-            nn.PixelShuffle(2),  # 输出的12通道，输入应该是48  size*2
-            nn.BatchNorm2d(12),
+            nn.PixelShuffle(2),  # 输出的60通道，输入应该是112+128=240  size*2=128
+            nn.BatchNorm2d(60),
         )
         self.layer10 = nn.Sequential(
-            nn.PixelShuffle(2),  # 输出的3通道，输入应该是12  size*2
-            nn.Sigmoid()
+            nn.PixelShuffle(2),  # 输出的31通道，输入应该是60+64=124  size*2=256
+            nn.BatchNorm2d(31),
+        )
+        self.layer11 = nn.Sequential(
+            nn.Conv2d(31, 3, kernel_size=3, stride=1, padding=1),  # size=256
+            nn.Sigmoid(),
         )
 
         self.relu = nn.LeakyReLU(inplace=True)
@@ -86,6 +90,8 @@ class HNet(nn.Module):
         x9 = self.layer9(x8)
         x9 = self.relu(torch.cat([x9, x1], dim=1))
 
-        x9 = self.layer10(x9)
+        x10 = self.relu(self.layer10(x9))
+        x11 = self.layer11(x10)
 
-        return x9
+
+        return x11

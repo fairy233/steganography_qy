@@ -18,7 +18,7 @@ def parse_args():
         '--beta', type=float, default=0.75, help='hyper parameter of loss_sum'
     )
     parser.add_argument(
-        '--test_path', default='./hdr/test', help='test hdr images path'
+        '--test_path', default='/media/a3080/b696e7b7-1f6d-4f3e-967e-d164ff107a68/qiao/HDR/test512', help='test hdr images path'
     )
     parser.add_argument(
         '--test_pics', default='./test/resultPics', help='folder to output test images'
@@ -27,18 +27,16 @@ def parse_args():
         '--test_log', default='./test/testLog.txt', help='test log'
     )
     parser.add_argument(
-        '--Hnet', default='./training1211/checkPoints/H_epoch0799_sumloss0.000568_lr0.001000.pth', help="path to Hidenet (to continue training)"
+        '--Hnet', default='./checkPoints1211/H_epoch0799_sumloss0.000568_lr0.001000.pth', help="path to Hidenet (to continue training)"
     )
     parser.add_argument(
-        '--Rnet', default='./training1211/checkPoints/R_epoch0799_sumloss0.000568_lr0.001000.pth', help="path to Revealnet (to continue training)"
+        '--Rnet', default='./checkPoints1211/R_epoch0799_sumloss0.000568_lr0.001000.pth', help="path to Revealnet (to continue training)"
     )
     return parser.parse_args()
 
 
 # 1. 参数
 opt = parse_args()
-print_log(time.asctime(time.localtime(time.time())), opt.test_log, False)
-
 # 2. 创建输出结果文件夹
 try:
     if not os.path.exists(opt.test_pics):
@@ -46,6 +44,7 @@ try:
 except OSError:
     print("mkdir failed!")
 
+print_log(time.asctime(time.localtime(time.time())), opt.test_log, False)
 # 把所有参数打印在日志中
 print_log(str(opt), opt.test_log, False)
 

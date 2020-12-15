@@ -4,7 +4,7 @@ from torch.autograd import Variable
 from torch.utils.data import DataLoader
 from utils.loss import *
 from utils.AverageMeter import AverageMeter
-from models.Hnet_base import HNet
+from models.Hnet_base2 import HNet
 from models.Rnet_base import RNet
 from utils.util import *
 
@@ -22,7 +22,7 @@ def parse_args():
         '--num_workers', type=int, default=0, help='Number of data loading workers.',
     )
     parser.add_argument(
-        '--images_path', type=str, default='./hdr/', help='Path to coverImage data.'
+        '--images_path', type=str, default='/media/a3080/b696e7b7-1f6d-4f3e-967e-d164ff107a68/qiao/HDR', help='Path to coverImage data.'
     )
     parser.add_argument(
         '--use_gpu', type=bool, default=True, help='Use GPU for training.'
@@ -77,6 +77,7 @@ def parse_args():
 
 
 def train(data_loader, epoch, Hnet, Rnet):
+    start_time = time.time()
     train_Hlosses = AverageMeter()
     train_Rlosses = AverageMeter()
     train_SumLosses = AverageMeter()
@@ -88,9 +89,8 @@ def train(data_loader, epoch, Hnet, Rnet):
     Hnet.train()  # 训练
     Rnet.train()
 
-    start_time = time.time()
     # batch_size循环
-    for i, data in enumerate(data_loader['train']):
+    for i, data in enumerate(data_loader):
         Hnet.zero_grad()
         Rnet.zero_grad()
 
@@ -113,11 +113,11 @@ def train(data_loader, epoch, Hnet, Rnet):
         secret_imgv = Variable(secret_img.clone(), requires_grad=False)
 
         stego = Hnet(concat_imgv)
-        errH = loss(stego, cover_imgv)  # loss between cover and container
+        errH = cosin_loss(stego, cover_imgv)  # loss between cover and container
         train_Hlosses.update(errH.item(), this_batch_size)
 
         secret_rev = Rnet(stego)
-        errR = loss(secret_rev, secret_imgv)  # loss between secret and revealed secret
+        errR = cosin_loss(secret_rev, secret_imgv)  # loss between secret and revealed secret
         train_Rlosses.update(errR.item(), this_batch_size)
 
         err_sum = errH + opt.beta * errR   # sum_loss
@@ -138,6 +138,7 @@ def train(data_loader, epoch, Hnet, Rnet):
     # save result pictures
     if (epoch % opt.result_freq == 0) or (epoch == opt.epochs - 1):
         save_pic('train', cover_img, stego, secret_img, secret_rev, opt.result_pics, opt.batch_size, epoch)
+        # save_batch_pic('train', cover_img, stego, secret_img, secret_rev, opt.result_pics, opt.batch_size, epoch)
 
     # save model params
     if epoch % opt.checkpoint_freq == 0 or epoch == opt.epochs - 1:
@@ -178,7 +179,7 @@ def valid(data_loader, epoch, Hnet, Rnet):
     val_Rlosses = AverageMeter()
 
     # batch_size循环
-    for i, data in enumerate(data_loader['valid']):
+    for i, data in enumerate(data_loader):
         Hnet.zero_grad()
         Rnet.zero_grad()
 
@@ -243,7 +244,6 @@ def main():
     if torch.cuda.is_available() and opt.use_gpu:
         print("CUDA is available!")
 
-    torch.benchmark.cudnn.enabled = True
     # 创建文件夹
     try:
         opt.checkpoint_path += "/checkPoints"

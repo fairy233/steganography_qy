@@ -4,6 +4,7 @@ from numpy.random import uniform
 import torch
 from torch.utils.data import Dataset
 import cv2
+import torchvision.utils as vutils
 import math
 
 
@@ -34,7 +35,7 @@ def cv2torch(np_img):
 
 def torch2cv(t_img):
     t_img = t_img.detach().cpu().numpy()
-    t_img = t_img[0, :, :, :]
+    t_img = t_img[0, :, :, :]  # qu batch
     # t_img = t_img.squeeze(0)
     return t_img.swapaxes(0, 2).swapaxes(0, 1)[:, :, (2, 1, 0)]
 
@@ -74,6 +75,8 @@ def transforms(hdr):
 
 def testTransforms(hdr):
     hdr = random_crop(hdr, resize=True)  # hdr 是一个numpy (256,256,3)
+    # hdr = cv2.resize(hdr, (256, 256))  # 把裁剪后的图resize到256，256范围
+
     # 归一化
     hdr = normImage(hdr)
     hdr = cv2torch(hdr)  # 转为(3,256,256) tensor
@@ -102,7 +105,7 @@ def print_network(net, logPath):
 
 
 def save_pic(phase, cover, stego, secret, secret_rev, save_path, batch_size, epoch):
-    # tensor  --> numpy.narray
+    # tensor  --> numpy.narray batch=1
     cover = torch2cv(cover)
     secret = torch2cv(secret)
     stego = torch2cv(stego)
@@ -140,13 +143,49 @@ def save_pic(phase, cover, stego, secret, secret_rev, save_path, batch_size, epo
 
     elif phase == 'train':
         resultImgName = '%s/trainResult_epoch%04d_batch%02d.hdr' % (save_path, epoch, batch_size)
+        # result hdr
+        cv2.imwrite(resultImgName, resultImg)
+        # result ldr
+        cv2.imwrite(resultImgName + '.jpg', resultImg_ldr)
     else:
         resultImgName = '%s/valResult_epoch%04d_batch%02d.hdr' % (save_path, epoch, batch_size)
+        # result hdr
+        cv2.imwrite(resultImgName, resultImg)
+        # result ldr
+        cv2.imwrite(resultImgName + '.jpg', resultImg_ldr)
 
-    # result hdr
-    cv2.imwrite(resultImgName, resultImg)
-    # result ldr
-    cv2.imwrite(resultImgName + '.jpg', resultImg_ldr)
+
+def save_batch_pic(phase, cover, stego, secret, secret_rev, save_path, batch_size, epoch):
+    # hdr geshi bukeyi !!!!!
+    # tensor  --> numpy.narray
+    showContainer = torch.cat([cover, stego], 0)
+    showReveal = torch.cat([secret, secret_rev], 0)
+    resultImg = torch.cat((showContainer, showReveal), 0)
+
+    # tone map  ldr
+    # cover_ldr = (hdr2ldr(cover) * 255).astype(int)
+    # secret_ldr = (hdr2ldr(secret) * 255).astype(int)
+    # stego_ldr = (hdr2ldr(stego) * 255).astype(int)
+    # secret_rev_ldr = (hdr2ldr(secret_rev) * 255).astype(int)
+    #
+    # showContainer_ldr = torch.cat([cover_ldr, stego_ldr], 0)
+    # showReveal_ldr = torch.cat([secret_ldr, secret_rev_ldr], 0)
+    # resultImg_ldr = torch.cat([showContainer_ldr, showReveal_ldr], 0)
+
+    if phase == 'train':
+        resultImgName = '%s/trainResult_epoch%04d_batch%02d.hdr' % (save_path, epoch, batch_size)
+        # result hdr
+        vutils.save_image(resultImg, resultImgName, nrow=int(batch_size/2), padding=1, normalize=True)
+        # result ldr
+        # vutils.save_image(resultImg_ldr, resultImgName + '.jpg', nrow=int(batch_size/2), padding=1, normalize=True)
+
+
+    else:
+        resultImgName = '%s/valResult_epoch%04d_batch%02d.hdr' % (save_path, epoch, batch_size)
+        # result hdr
+        vutils.save_image(resultImg, resultImgName, nrow=int(batch_size/2), padding=1, normalize=True)
+        # result ldr
+        # vutils.save_image(resultImg_ldr, resultImgName + '.jpg', nrow=int(batch_size/2), padding=1, normalize=True)
 
 
 def random_noise(img, im_noise=[0.0, 0.0001]):
