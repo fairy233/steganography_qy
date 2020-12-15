@@ -94,6 +94,13 @@ def loss3(gen_frames, gt_frames, alpha=0.5):
     return l1 + alpha * cosin
 
 
+# L2loss + TV loss
+def loss4(gen_frames, gt_frames, alpha=0.5):
+    l2 = mse_loss(gen_frames, gt_frames)
+    tv = TVLoss()  # 注意这里只能输入一张图，需要修改！！！
+    return l2 + alpha * tv
+
+
 def cv2torch(np_img):
     rgb = np_img[:, :, (2, 1, 0)].astype(np.float32)
     return torch.from_numpy(rgb.swapaxes(1, 2).swapaxes(0, 1))
@@ -137,3 +144,26 @@ def get_hue_value(img):
     img_hue = img_hue + zeros
     # print(img_hue.shape)
     return img_hue / 360
+
+
+class TVLoss(nn.Module):
+    # tv-loss total variation 总变分损失， 类似于梯度loss，就是与周边像素的梯度的平方和，
+    # 是作为一种正则项， 配合L2loss一起使用，约束噪声，降噪或对抗checkerboard，使图片光滑
+    def __init__(self, TVLoss_weight=1):
+        super(TVLoss, self).__init__()
+        self.TVLoss_weight = TVLoss_weight
+
+    def forward(self, x):
+        batch_size = x.size()[0]
+        h_x = x.size()[2]
+        w_x = x.size()[3]
+        count_h = self._tensor_size(x[:, :, 1:, :])
+        count_w = self._tensor_size(x[:, :, :, 1:])
+        h_tv = torch.pow((x[:, :, 1:, :] - x[:, :, :h_x - 1, :]), 2).sum()
+        w_tv = torch.pow((x[:, :, :, 1:] - x[:, :, :, :w_x - 1]), 2).sum()
+        return self.TVLoss_weight * 2 * (h_tv / count_h + w_tv / count_w) / batch_size
+
+    def _tensor_size(self, t):
+        return t.size()[1] * t.size()[2] * t.size()[3]
+
+
