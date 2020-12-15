@@ -55,7 +55,7 @@ if torch.cuda.is_available():
 
 # 3. 准备test数据集
 print_log('prepare test dataset', opt.test_log)
-test_dataset = DirectoryDataset(opt.test_path, preprocess=transforms)
+test_dataset = DirectoryDataset(opt.test_path, preprocess=testTransforms)
 test_loader = DataLoader(test_dataset, batch_size=2, num_workers=0, shuffle=True, drop_last=True)
 assert test_loader
 print_log('test dataset has been prepared!', opt.test_log)

@@ -72,6 +72,13 @@ def transforms(hdr):
     return hdr
 
 
+def testTransforms(hdr):
+    hdr = random_crop(hdr, resize=True)  # hdr 是一个numpy (256,256,3)
+    # 归一化
+    hdr = normImage(hdr)
+    hdr = cv2torch(hdr)  # 转为(3,256,256) tensor
+    return hdr
+
 def print_log(log_info, log_path, console=True):
     log_info += '\n'
     if console:
