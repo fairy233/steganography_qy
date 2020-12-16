@@ -5,6 +5,7 @@ from utils.init_weights import init_weights
 # based on the Unet
 # downsample: two conv + BN+ LeakyRelu, maxpool size/2
 # upsample:
+# 1216 这个待定！！！！
 
 class HNet(nn.Module):
     def __init__(self, colordim=6):
