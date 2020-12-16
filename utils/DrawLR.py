@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 # 画train的 LR曲线
 # H和R的学习率相同
 
-f = open("../training1211/trainingLogs/train_16_log.txt")  # 返回一个文件对象
+f = open("../training/trainingLogs/train_16_log.txt")  # 返回一个文件对象
 line = f.readline()  # 调用文件的 readline()方法
 train_epoch = []
 train_lr = []
@@ -37,7 +37,7 @@ plt.xlabel('epochs')
 plt.ylabel('lr')
 plt.title('train_lr')
 plt.legend()
-plt.savefig('../training1211/trainingLogs/lr_11_1211.jpg')
+plt.savefig('../training/trainingLogs/lr_16_1215.jpg')
 plt.show()
 
 f.close()

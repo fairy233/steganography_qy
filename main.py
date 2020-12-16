@@ -113,11 +113,11 @@ def train(data_loader, epoch, Hnet, Rnet):
         secret_imgv = Variable(secret_img.clone(), requires_grad=False)
 
         stego = Hnet(concat_imgv)
-        errH = cosin_loss(stego, cover_imgv)  # loss between cover and container
+        errH = loss(stego, cover_imgv)  # loss between cover and container
         train_Hlosses.update(errH.item(), this_batch_size)
 
         secret_rev = Rnet(stego)
-        errR = cosin_loss(secret_rev, secret_imgv)  # loss between secret and revealed secret
+        errR = loss(secret_rev, secret_imgv)  # loss between secret and revealed secret
         train_Rlosses.update(errR.item(), this_batch_size)
 
         err_sum = errH + opt.beta * errR   # sum_loss
@@ -308,9 +308,9 @@ def main():
     # 优化器  beta1=0.9, beta2=0.999
     optimizerH = torch.optim.Adam(modelH.parameters(), lr=opt.lr, betas=(opt.beta1, opt.beta2))
     # 训练策略，学习率下降, 若训练集的loss值一直不变，就调小学习率
-    schedulerH = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizerH, mode='min', factor=0.2, patience=5, verbose=True)
+    schedulerH = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizerH, mode='min', factor=0.2, patience=10, verbose=True, min_lr=0.0000001)
     optimizerR = torch.optim.Adam(modelR.parameters(), lr=opt.lr, betas=(opt.beta1, opt.beta2))
-    schedulerR = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizerR, mode='min', factor=0.2, patience=8, verbose=True)
+    schedulerR = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizerR, mode='min', factor=0.2, patience=10, verbose=True, min_lr=0.0000001)
     # schedulerH = torch.optim.lr_scheduler.ExponentialLR(optimizerH, gamma=0.8)
     # schedulerR = torch.optim.lr_scheduler.ExponentialLR(optimizerR, gamma=0.8)
     print_log("training is beginning ......................................", logPath)

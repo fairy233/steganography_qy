@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 # 画H_loss曲线
-f = open("./training1213/trainingLogs/train_16_log.txt")  # 返回一个文件对象
+f = open("../training/trainingLogs/train_16_log.txt")  # 返回一个文件对象
 line = f.readline()  # 调用文件的 readline()方法
 train_epoch = []
 valid_epoch = []
@@ -43,7 +43,7 @@ plt.xlabel('epochs')
 plt.ylabel('loss')
 plt.title('Hloss')
 plt.legend()
-plt.savefig('./training1213/trainingLogs/Hloss_16_1213.jpg')
+plt.savefig('../training/trainingLogs/Hloss_16_1215.jpg')
 plt.show()
 
 f.close()

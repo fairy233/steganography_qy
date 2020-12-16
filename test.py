@@ -4,7 +4,7 @@ from torch.autograd import Variable
 from torch.utils.data import DataLoader
 from utils.util import *
 from utils.loss import *
-from models.Hnet_base import HNet
+from models.Hnet_base1 import HNet
 from models.Rnet_base import RNet
 
 
@@ -27,10 +27,10 @@ def parse_args():
         '--test_log', default='./test/testLog.txt', help='test log'
     )
     parser.add_argument(
-        '--Hnet', default='./checkPoints1211/H_epoch0799_sumloss0.000568_lr0.001000.pth', help="path to Hidenet (to continue training)"
+        '--Hnet', default='./training1215/checkPoints/H_epoch0700_sumloss0.435067_lr0.000100.pth', help="path to Hidenet (to continue training)"
     )
     parser.add_argument(
-        '--Rnet', default='./checkPoints1211/R_epoch0799_sumloss0.000568_lr0.001000.pth', help="path to Revealnet (to continue training)"
+        '--Rnet', default='./training1215/checkPoints/R_epoch0700_sumloss0.435067_lr0.000100.pth', help="path to Revealnet (to continue training)"
     )
     return parser.parse_args()
 

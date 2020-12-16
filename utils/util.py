@@ -82,6 +82,7 @@ def testTransforms(hdr):
     hdr = cv2torch(hdr)  # 转为(3,256,256) tensor
     return hdr
 
+
 def print_log(log_info, log_path, console=True):
     log_info += '\n'
     if console:
@@ -228,7 +229,7 @@ def random_crop(img, sub_im_sc=[6, 6], resize=False, rez_im_sc=[256, 256]):
     return img_crop
 
 
-def get_e_from_float(RGB, normalize='minmax'):
+def get_e_from_float(RGB, normalize='minmax', esp=1e-5):
     if RGB.ndim == 3:
         zeros = np.sum(RGB, axis=2) == 0
         max_value = np.max(RGB, axis=2)
@@ -237,11 +238,11 @@ def get_e_from_float(RGB, normalize='minmax'):
         if normalize == 'minmax':
             e_min = np.min(e)
             e_max = np.max(e)
-            e = (e - e_min) / (e_max - e_min)
+            e = (e - e_min) / (e_max - e_min + esp)
         elif normalize == 'log':
             e_min = np.min(e)
             e_max = np.max(e)
-            e = np.log(e + 1 - e_min) / np.log(e_max + 1 - e_min)
+            e = np.log(e + 1 - e_min) / np.log(e_max + 1 - e_min + esp)
         else:
             raise NotImplementedError
         e = np.expand_dims(e, axis=2)
@@ -250,13 +251,13 @@ def get_e_from_float(RGB, normalize='minmax'):
         raise NotImplementedError
 
 
-def normImage(hdr, normalize='minmax'):
+def normImage(hdr, normalize='minmax', esp=1e-5):
     minvalue = np.min(hdr)
     maxvalue = np.max(hdr)
     if normalize == 'minmax':
-        hdr = (hdr - minvalue) / (maxvalue - minvalue)
+        hdr = (hdr - minvalue) / (maxvalue - minvalue + esp)
     elif normalize == 'log':
-        hdr = np.log(hdr + 1 - minvalue) / np.log(maxvalue + 1 - minvalue)
+        hdr = np.log(hdr + 1 - minvalue) / (np.log(maxvalue + 1 - minvalue)  + esp)
     else:
         raise NotImplementedError
     return hdr
