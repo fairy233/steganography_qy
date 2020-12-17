@@ -39,7 +39,7 @@ plt.xlabel('epochs')
 plt.ylabel('loss')
 plt.title('Sum_loss')
 plt.legend()
-plt.savefig('../training/trainingLogs/sum_loss_16_1215.jpg')
+plt.savefig('../training/trainingLogs/sum_loss_16_1216.jpg')
 plt.show()
 
 f.close()

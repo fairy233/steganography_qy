@@ -37,7 +37,7 @@ plt.xlabel('epochs')
 plt.ylabel('lr')
 plt.title('train_lr')
 plt.legend()
-plt.savefig('../training/trainingLogs/lr_16_1215.jpg')
+plt.savefig('../training/trainingLogs/lr_16_1216.jpg')
 plt.show()
 
 f.close()

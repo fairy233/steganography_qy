@@ -4,9 +4,9 @@ from utils.util import process_path
 
 
 def imageDeduplication():
-    image_path = 'hdr/test'
+    image_path = '/media/a3080/b696e7b7-1f6d-4f3e-967e-d164ff107a68/qiao/HDR_gt'
     image_path = process_path(image_path)
-    data_extensions = ['.hdr', '.exr', '.jpeg']
+    data_extensions = ['.hdr', '.exr']
     name_list = []
     image_list = []
 
@@ -26,6 +26,6 @@ def imageDeduplication():
     new_list = list(new_list)
 
     for i in range(len(new_list)):
-        cv2.imwrite('%s/hdr512/i.hdr' % ( image_path ), i)
+        cv2.imwrite('/media/a3080/b696e7b7-1f6d-4f3e-967e-d164ff107a68/qiao/HDR512/i.hdr', i)
 
 imageDeduplication()

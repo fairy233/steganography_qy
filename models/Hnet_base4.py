@@ -5,7 +5,7 @@ import torch
 # 5个卷积层，conv size/2， k = 2, s = 2, p = 0
 # 5个反卷积层， deconv size*2 k= 2, s = 2, p = 0
 
-# 改变卷积核的参数！！   使用 k = 2, s = 2, p = 1
+# 改变卷积核的参数！！   使用 k = 4, s = 2, p = 1
 
 
 class HNet(nn.Module):

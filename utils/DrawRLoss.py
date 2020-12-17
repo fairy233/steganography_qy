@@ -42,7 +42,7 @@ plt.xlabel('epochs')
 plt.ylabel('loss')
 plt.title('Rloss')
 plt.legend()
-plt.savefig('../training/trainingLogs/Rloss_16_1215.jpg')
+plt.savefig('../training/trainingLogs/Rloss_16_1216.jpg')
 plt.show()
 
 f.close()

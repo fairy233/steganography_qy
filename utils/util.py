@@ -54,7 +54,11 @@ def hdr2ldr(hdr):
 # 对输入图像的预处理的函数--图像增强（裁剪和归一化，图像翻转flip, 高斯噪声）
 def transforms(hdr):
     hdr_size = np.array(hdr.shape)
-    hdr = random_crop(hdr, resize=True)  # hdr 是一个numpy (256,256,3)
+
+    if sum(hdr_size == 512) == 2:  # if size is 512*512, zhijie resize
+        hdr = cv2.resize(hdr, (256, 256))
+    else:
+        hdr = random_crop(hdr, resize=True)  # hdr 是一个numpy (256,256,3)
 
     # 添加指数E分量
     # e = get_e_from_float(hdr)
