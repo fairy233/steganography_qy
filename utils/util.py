@@ -6,6 +6,9 @@ from torch.utils.data import Dataset
 import cv2
 import torchvision.utils as vutils
 import math
+import torch.autograd as autograd
+from torch.autograd import Variable
+import torch.nn.init as init
 
 
 # 返回绝对路径
@@ -49,6 +52,47 @@ def hdr2ldr(hdr):
     ldr = Du.process(hdr)
     ldr = np.clip(ldr, 0, 1)
     return ldr
+
+
+cuda = True if torch.cuda.is_available() else False
+Tensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
+
+
+# WGAN的训练方式
+def compute_gradient_penalty(D, real_samples, fake_samples):
+    """Calculates the gradient penalty loss for WGAN GP"""
+    # Random weight term for interpolation between real and fake samples
+    alpha = Tensor(np.random.random((real_samples.size(0), 1, 1, 1)))
+    # Get random interpolation between real and fake samples
+    interpolates = (alpha * real_samples + ((1 - alpha) * fake_samples)).requires_grad_(True)
+    d_interpolates = D(interpolates)
+    fake = Variable(Tensor(real_samples.shape[0], 1).fill_(0.9), requires_grad=False)
+    # Get gradient w.r.t. interpolates
+    gradients = autograd.grad(
+        outputs=d_interpolates,
+        inputs=interpolates,
+        grad_outputs=fake,
+        create_graph=True,
+        retain_graph=True,
+        only_inputs=True,
+    )[0]
+    gradients = gradients.view(gradients.size(0), -1)
+    gradient_penalty = ((gradients.norm(2, dim=1) - 1) ** 2).mean()
+    return gradient_penalty
+
+
+# 参数初始化，用xavier的初始化方法
+def weights_init(m):
+    classname = m.__class__.__name__
+    if classname.find('Conv2d') != -1:
+        init.xavier_normal_(m.weight.data)
+        init.constant_(m.bias.data, 0.0)
+    elif classname.find('Conv2d_transpose') != -1:
+        init.xavier_normal_(m.weight.data)
+        init.constant_(m.bias.data, 0.0)
+    elif classname.find('Linear') != -1:
+        init.xavier_normal_(m.weight.data)
+        init.constant_(m.bias.data, 0.0)
 
 
 # 对输入图像的预处理的函数--图像增强（裁剪和归一化，图像翻转flip, 高斯噪声）
